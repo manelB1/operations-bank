@@ -23,7 +23,7 @@ function getBalance(statment) {
             return (acc - operation.amount);
         }
     }, 0)
-    
+
     return balance;
 }
 
@@ -65,10 +65,10 @@ app.post("/deposit", verifyExistsAccountCPF, (request, response) => {
 })
 
 app.post("/withdraw", verifyExistsAccountCPF, (request, response) => {
-    const {amount} = request.body;
+    const { amount } = request.body;
     const { customer } = request;
     const balance = getBalance(customer.statment)
-    if(balance < amount){
+    if (balance < amount) {
         return response.status(400).send({ message: "Insufficient balance." })
     }
     const statmentOperation = {
@@ -80,5 +80,46 @@ app.post("/withdraw", verifyExistsAccountCPF, (request, response) => {
     customer.statment.push(statmentOperation);
     return response.status(201).send();
 })
+
+app.get('/statement/date', verifyExistsAccountCPF, (request, response) => {
+    const { customer } = request;
+    const { date } = request.query;
+
+    const dateFormated = new Date(date + " 00:00");
+
+    const statment = customer.statment.filter((statment) => statment.create_at.toDateString() === new Date(dateFormated).toDateString());
+    return response.json(statment);
+})
+
+app.put("/account", verifyExistsAccountCPF, (request, response) => {
+    const { name } = request.body;
+    const { customer } = request;
+
+    customer.name = name;
+
+    return response.status(201).send();
+})
+
+app.get("/account", verifyExistsAccountCPF, (request, response) => {
+    const { customer } = request;
+
+    return response.json(customer)
+})
+
+app.get("/balance", verifyExistsAccountCPF ,(request, response) => {
+    const { customer } = request;
+
+    const balance = getBalance(customer.statment);
+    return response.json(balance);
+})
+
+app.delete("/account", verifyExistsAccountCPF, (request, response) => {
+    const { customer } = request;
+
+    costumers.slice(customer, 1)
+
+    return response.status(200).json(customer);
+})
+
 
 app.listen(3333)
